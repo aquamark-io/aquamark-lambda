@@ -1,0 +1,10 @@
+{
+  "name": "aquamark-lambda",
+  "version": "1.0.0",
+  "description": "AWS Lambda function for Aquamark",
+  "main": "index.mjs",
+  "type": "module",
+  "dependencies": {
+    "node-fetch": "^3.2.6"
+  }
+}
