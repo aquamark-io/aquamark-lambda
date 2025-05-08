@@ -1,46 +1,38 @@
 {
   "manifest_version": 3,
-  "name": "Aquamark Extension",
+  "name": "Aquamark Chrome Extension",
   "version": "1.0",
-  "description": "Watermark your PDFs directly from Gmail with Aquamark.",
   "permissions": [
     "identity",
-    "storage",
-    "activeTab",
     "scripting",
-    "https://*/",
-    "webRequest"
+    "activeTab",
+    "identity.email",
+    "storage"
   ],
   "host_permissions": [
-    "*://*/*"
+    "*://mail.google.com/*",
+    "*://*.execute-api.us-east-2.amazonaws.com/*"
   ],
   "background": {
     "service_worker": "background.js"
   },
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    }
-  },
   "content_scripts": [
     {
-      "matches": ["https://mail.google.com/*"],
+      "matches": ["*://mail.google.com/*"],
       "js": ["content.js"]
     }
   ],
-  "web_accessible_resources": [
-    {
-      "resources": ["icons/*", "popup.html"],
-      "matches": ["<all_urls>"]
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.jpg",
+      "48": "icon48.jpg",
+      "128": "icon128.jpg"
     }
-  ],
-  "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
   },
-  "options_page": "options.html"
+  "icons": {
+    "16": "icon16.jpg",
+    "48": "icon48.jpg",
+    "128": "icon128.jpg"
+  }
 }
