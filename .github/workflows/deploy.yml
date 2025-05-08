@@ -24,10 +24,13 @@ jobs:
         run: npm install
 
       - name: Zip for Lambda
-        run: zip -r aquamark-lambda.zip .
+        run: zip -r aquamark-lambda.zip index.mjs node_modules package.json
 
-      - name: Deploy to Lambda
+      - name: Update Lambda Function
+        env:
+          AWS_REGION: us-east-1
         run: |
           aws lambda update-function-code \
             --function-name AquamarkHandler \
-            --zip-file fileb://aquamark-lambda.zip
+            --zip-file fileb://aquamark-lambda.zip \
+            --publish
