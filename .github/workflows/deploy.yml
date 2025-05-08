@@ -26,6 +26,12 @@ jobs:
       - name: Zip for Lambda
         run: zip -r aquamark-lambda.zip index.mjs node_modules package.json
 
+      - name: Verify AWS CLI
+        run: aws --version
+
+      - name: List Lambda Functions (Debugging Step)
+        run: aws lambda list-functions
+
       - name: Update Lambda Function
         env:
           AWS_REGION: us-east-1
@@ -33,4 +39,4 @@ jobs:
           aws lambda update-function-code \
             --function-name AquamarkHandler \
             --zip-file fileb://aquamark-lambda.zip \
-            --publish
+            --publish || exit 1
