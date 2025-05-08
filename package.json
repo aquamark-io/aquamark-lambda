@@ -2,9 +2,9 @@
   "name": "aquamark-lambda",
   "version": "1.0.0",
   "description": "AWS Lambda function for Aquamark",
-  "main": "index.mjs",
-  "type": "module",
+  "main": "index.js",
   "dependencies": {
-    "node-fetch": "^3.2.6"
+    "node-fetch": "^3.2.6",
+    "@supabase/supabase-js": "^2.0.0"
   }
 }
