@@ -15,34 +15,32 @@ exports.handler = async (event) => {
         // Normalize the email to lowercase to match Supabase records
         const normalizedEmail = user_email.toLowerCase();
 
-        // Fetch logo URL and usage data from Supabase
+        // Fetch logo URL from Supabase storage
+        const logo_url = `https://dvzmnikrvkvgragzhrof.supabase.co/storage/v1/object/public/logos/${normalizedEmail}/logo-1746620828730.png`;
+
+        // Fetch usage data from Supabase
         const { data, error } = await supabase
             .from('usage')
-            .select('logo_url, page_credits, pages_used, encrypted')
+            .select('page_credits, pages_used, plan_name')
             .eq('user_email', normalizedEmail)
             .single();
 
         if (error || !data) {
+            console.error('Data retrieval failed:', error);
             return {
                 statusCode: 404,
                 body: JSON.stringify({ error: 'User not found or data retrieval failed.' })
             };
         }
 
-        // Check for encryption and set Render URL if needed
-        let decryption_url = null;
-        if (data.encrypted) {
-            decryption_url = `${RENDER_URL}/decrypt?email=${normalizedEmail}`;
-        }
-
-        // Return the user data
+        // Return the user data with the logo URL
         return {
             statusCode: 200,
             body: JSON.stringify({
-                logo_url: data.logo_url,
+                logo_url: logo_url,
                 page_credits: data.page_credits,
                 pages_used: data.pages_used,
-                decryption_url: decryption_url
+                plan_name: data.plan_name
             })
         };
 
