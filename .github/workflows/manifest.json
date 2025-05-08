@@ -1,8 +1,28 @@
 {
   "manifest_version": 3,
   "name": "Aquamark Extension",
-  "description": "Watermark your PDFs directly from Gmail.",
+  "description": "Watermark and Protect Your PDFs Instantly",
   "version": "1.0",
+  "permissions": [
+    "identity",
+    "identity.email",
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -15,25 +35,5 @@
     "16": "icon16.jpg",
     "48": "icon48.jpg",
     "128": "icon128.jpg"
-  },
-  "background": {
-    "service_worker": "background.js"
-  },
-  "content_scripts": [
-    {
-      "matches": ["https://mail.google.com/*"],
-      "js": ["content.js"]
-    }
-  ],
-  "permissions": [
-    "identity",
-    "storage",
-    "activeTab",
-    "scripting",
-    "identity.email"
-  ],
-  "host_permissions": [
-    "https://mail.google.com/*",
-    "https://dvzmnikrvkvgragzhrof.supabase.co/*"
-  ]
+  }
 }
