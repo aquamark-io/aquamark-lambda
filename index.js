@@ -15,10 +15,25 @@ exports.handler = async (event) => {
         // Normalize the email to lowercase to match Supabase records
         const normalizedEmail = user_email.toLowerCase();
 
-        // Fetch logo URL from Supabase storage
-        const logo_url = `https://dvzmnikrvkvgragzhrof.supabase.co/storage/v1/object/public/logos/${normalizedEmail}/logo-1746620828730.png`;
+        // 1. Fetch the list of objects in the user's folder
+        const { data: logoList, error: listError } = await supabase
+            .storage
+            .from('logos')
+            .list(normalizedEmail, { limit: 1 });
 
-        // Fetch usage data from Supabase
+        if (listError || logoList.length === 0) {
+            console.error('Logo fetch failed:', listError);
+            return {
+                statusCode: 404,
+                body: JSON.stringify({ error: 'Logo not found in storage.' })
+            };
+        }
+
+        // 2. Get the first logo file (there should only be one)
+        const logo_filename = logoList[0].name;
+        const logo_url = `https://dvzmnikrvkvgragzhrof.supabase.co/storage/v1/object/public/logos/${normalizedEmail}/${logo_filename}`;
+
+        // 3. Fetch usage data from Supabase
         const { data, error } = await supabase
             .from('usage')
             .select('page_credits, pages_used, plan_name')
@@ -33,7 +48,7 @@ exports.handler = async (event) => {
             };
         }
 
-        // Return the user data with the logo URL
+        // 4. Return the user data with the logo URL
         return {
             statusCode: 200,
             body: JSON.stringify({
