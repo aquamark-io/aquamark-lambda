@@ -1,30 +1,23 @@
 {
   "manifest_version": 3,
   "name": "Aquamark Extension",
+  "description": "Watermark your PDFs directly from Gmail.",
   "version": "1.0",
-  "description": "Watermark your PDFs directly from Gmail with Aquamark.",
-  "permissions": [
-    "identity",
-    "storage",
-    "activeTab",
-    "scripting",
-    "https://*/",
-    "webRequest"
-  ],
-  "host_permissions": [
-    "*://mail.google.com/*",
-    "*://*.execute-api.us-east-2.amazonaws.com/*"
-  ],
-  "background": {
-    "service_worker": "background.js"
-  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
+      "16": "icon16.jpg",
+      "48": "icon48.jpg",
+      "128": "icon128.jpg"
     }
+  },
+  "icons": {
+    "16": "icon16.jpg",
+    "48": "icon48.jpg",
+    "128": "icon128.jpg"
+  },
+  "background": {
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
@@ -32,16 +25,15 @@
       "js": ["content.js"]
     }
   ],
-  "web_accessible_resources": [
-    {
-      "resources": ["icons/*", "popup.html"],
-      "matches": ["<all_urls>"]
-    }
+  "permissions": [
+    "identity",
+    "storage",
+    "activeTab",
+    "scripting",
+    "identity.email"
   ],
-  "icons": {
-    "16": "icon16.jpg",
-    "48": "icon48.jpg",
-    "128": "icon128.jpg"
-  },
-  "options_page": "options.html"
+  "host_permissions": [
+    "https://mail.google.com/*",
+    "https://dvzmnikrvkvgragzhrof.supabase.co/*"
+  ]
 }
