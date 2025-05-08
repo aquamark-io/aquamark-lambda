@@ -51,15 +51,20 @@ const observeGmail = () => {
 const getAttachmentBase64 = (card) => {
   return new Promise((resolve, reject) => {
     const attachmentUrl = card.closest('a').href;
-    fetch(attachmentUrl)
-      .then((response) => response.blob())
-      .then((blob) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      })
-      .catch(reject);
+
+    fetch(attachmentUrl, {
+      headers: {
+        'Authorization': 'Bearer ' + localStorage.getItem('gmailAuthToken')
+      }
+    })
+    .then((response) => response.blob())
+    .then((blob) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    })
+    .catch(reject);
   });
 };
 
