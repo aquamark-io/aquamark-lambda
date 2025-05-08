@@ -4,10 +4,10 @@
   "version": "1.0",
   "description": "Watermark your PDFs directly from Gmail with Aquamark.",
   "permissions": [
+    "identity",
     "storage",
     "activeTab",
     "scripting",
-    "identity",
     "https://*/",
     "webRequest"
   ],
