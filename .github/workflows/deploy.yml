@@ -10,38 +10,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Check out the repo
+      uses: actions/checkout@v2
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '18'
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+    - name: Install Dependencies
+      run: npm install
 
-      - name: Install Dependencies
-        run: npm install
+    - name: Zip for Lambda
+      run: |
+        zip -r aquamark-lambda.zip index.mjs node_modules package.json
 
-      - name: Verify Node Modules
-        run: ls -l node_modules
+    - name: Verify Zip Exists
+      run: ls -l aquamark-lambda.zip
 
-      - name: Zip for Lambda
-        run: |
-          pwd
-          ls -l
-          zip -r aquamark-lambda.zip index.mjs node_modules package.json
+    - name: Show Current Directory
+      run: pwd
 
-      - name: Verify Zip Exists
-        run: ls -l aquamark-lambda.zip
+    - name: List Directory Contents
+      run: ls -l
 
-      - name: Update Lambda Function with Debug
-        env:
-          AWS_REGION: us-east-1
-        run: |
-          echo "Updating Lambda Function..."
-          aws lambda update-function-code \
-            --function-name AquamarkHandler \
-            --zip-file fileb://aquamark-lambda.zip \
-            --publish \
-            --debug
+    - name: Update Lambda Function with Debug
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: us-east-1
+      run: |
+        echo "Updating Lambda Function..."
+        aws lambda update-function-code \
+          --function-name AquamarkHandler \
+          --zip-file fileb://aquamark-lambda.zip \
+          --publish \
+          --debug
