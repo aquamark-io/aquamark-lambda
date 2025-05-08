@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Aquamark Extension</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 15px;
+            width: 250px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h3>Aquamark Extension</h3>
+    <button id="fetch-email">Fetch Email</button>
+    <p id="result"></p>
+
+    <script>
+        document.getElementById('fetch-email').addEventListener('click', async () => {
+            chrome.identity.getProfileUserInfo((userInfo) => {
+                document.getElementById('result').innerText = userInfo.email ? 
+                    `Email: ${userInfo.email}` : 'No email found';
+            });
+        });
+    </script>
+</body>
+</html>
