@@ -16,7 +16,7 @@ export const handler = async (event) => {
     }
 
     // Fetch logo from Supabase
-    const logoUrl = `https://your-supabase-url.storage.supabase.co/storage/v1/object/public/logos/${email}/logo.jpg`;
+    const logoUrl = `https://https://dvzmnikrvkvgragzhrof.supabase.co/storage/v1/object/public/logos/${email}/logo.jpg`;
 
     // Mock watermark processing
     console.log(`Processing watermark for ${email}`);
