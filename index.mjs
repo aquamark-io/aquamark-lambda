@@ -1,31 +1,53 @@
-// index.mjs
-import fetch from "node-fetch";
+// AWS Lambda Function for Aquamark Chrome Extension
 
-export const handler = async (event) => {
-    console.log("Event Received:", event);
-    
-    const { email, pdfData } = JSON.parse(event.body);
+const { createClient } = require('@supabase/supabase-js');
 
-    if (!email || !pdfData) {
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
+const RENDER_URL = process.env.RENDER_URL;
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+exports.handler = async (event) => {
+    const { user_email } = JSON.parse(event.body);
+
+    try {
+        // Fetch logo URL and usage data from Supabase
+        const { data, error } = await supabase
+            .from('usage')
+            .select('logo_url, page_credits, pages_used, encrypted')
+            .eq('user_email', user_email)
+            .single();
+
+        if (error || !data) {
+            return {
+                statusCode: 404,
+                body: JSON.stringify({ error: 'User not found or data retrieval failed.' })
+            };
+        }
+
+        // Check for encryption and set Render URL if needed
+        let decryption_url = null;
+        if (data.encrypted) {
+            decryption_url = `${RENDER_URL}/decrypt?email=${user_email}`;
+        }
+
+        // Return the user data
         return {
-            statusCode: 400,
+            statusCode: 200,
             body: JSON.stringify({
-                message: "Invalid request. Email and PDF data are required.",
-            }),
+                logo_url: data.logo_url,
+                page_credits: data.page_credits,
+                pages_used: data.pages_used,
+                decryption_url: decryption_url
+            })
+        };
+
+    } catch (err) {
+        console.error('Error fetching data:', err);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: 'Internal Server Error' })
         };
     }
-
-    // Fetch logo from Supabase
-    const logoUrl = `https://dvzmnikrvkvgragzhrof.supabase.co/storage/v1/object/public/logos/${email}/logo.jpg`;
-
-    // Mock watermark processing
-    console.log(`Processing watermark for ${email}`);
-
-    return {
-        statusCode: 200,
-        body: JSON.stringify({
-            message: `Watermarked PDF for ${email} generated successfully.`,
-            logoUrl: logoUrl
-        }),
-    };
 };
