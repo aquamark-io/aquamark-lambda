@@ -29,23 +29,7 @@
     <button id="fetch-email">Fetch Email</button>
     <p id="result"></p>
 
-    <script>
-        document.getElementById('fetch-email').addEventListener('click', async () => {
-            try {
-                chrome.identity.getProfileUserInfo((userInfo) => {
-                    if (chrome.runtime.lastError) {
-                        console.error(chrome.runtime.lastError.message);
-                        document.getElementById('result').innerText = "Failed to fetch email.";
-                        return;
-                    }
-                    document.getElementById('result').innerText = userInfo.email ? 
-                        `Email: ${userInfo.email}` : 'No email found';
-                });
-            } catch (error) {
-                console.error(error.message);
-                document.getElementById('result').innerText = "Error fetching email.";
-            }
-        });
-    </script>
+    <!-- Load the script from an external JS file -->
+    <script src="popup.js"></script>
 </body>
 </html>
