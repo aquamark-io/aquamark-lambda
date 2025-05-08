@@ -12,11 +12,14 @@ exports.handler = async (event) => {
     const { user_email } = JSON.parse(event.body);
 
     try {
+        // Normalize the email to lowercase to match Supabase records
+        const normalizedEmail = user_email.toLowerCase();
+
         // Fetch logo URL and usage data from Supabase
         const { data, error } = await supabase
             .from('usage')
             .select('logo_url, page_credits, pages_used, encrypted')
-            .eq('user_email', user_email)
+            .eq('user_email', normalizedEmail)
             .single();
 
         if (error || !data) {
@@ -29,7 +32,7 @@ exports.handler = async (event) => {
         // Check for encryption and set Render URL if needed
         let decryption_url = null;
         if (data.encrypted) {
-            decryption_url = `${RENDER_URL}/decrypt?email=${user_email}`;
+            decryption_url = `${RENDER_URL}/decrypt?email=${normalizedEmail}`;
         }
 
         // Return the user data
