@@ -32,11 +32,16 @@ jobs:
       - name: List Lambda Functions (Debugging Step)
         run: aws lambda list-functions
 
-      - name: Update Lambda Function
+      - name: Update Lambda Function with Debug
         env:
           AWS_REGION: us-east-1
         run: |
+          echo "Updating Lambda Function..."
           aws lambda update-function-code \
             --function-name AquamarkHandler \
             --zip-file fileb://aquamark-lambda.zip \
-            --publish || exit 1
+            --publish \
+            --debug
+
+      - name: Check Logs
+        run: dmesg | tail -20
