@@ -25,7 +25,7 @@
   "https://people.googleapis.com/*"
 ],
 "oauth2": {
-  "client_id": "291434381676-tvr93t3bir4pp1m7qaf9nv9to9m0g5l7.apps.googleusercontent.com",
+"client_id": "291434381676-tvr93t3bir4pp1m7qaf9nv9to9m0g5l7.apps.googleusercontent.com"
   "scopes": [
     "openid",
     "email",
