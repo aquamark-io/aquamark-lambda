@@ -9,6 +9,15 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         try {
             // Step 1: Check pages remaining from Supabase
             const userEmail = await getUserEmail();
+            console.log(`📧 User email detected: ${userEmail}`);
+
+            if (!userEmail) {
+                console.error("❌ No user email found in storage.");
+                alert("Could not detect your email address. Please log in again.");
+                sendResponse({ success: false, message: "User email not found" });
+                return;
+            }
+
             const userData = await fetchPageCount(userEmail);
 
             if (!userData || !userData.pages_remaining) {
@@ -75,10 +84,10 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
 // Function to apply watermark - Temporary placeholder
 async function applyWatermark(pdfBlob) {
     console.log("💧 Applying watermark...");
-    return pdfBlob; // Placeholder, will be replaced with PDFLib watermarking
+    return pdfBlob;
 }
 
-// Function to get user's email from Outseta
+// Function to get user's email from storage
 async function getUserEmail() {
     return new Promise((resolve) => {
         chrome.storage.local.get(['user_email'], (result) => {
@@ -91,7 +100,7 @@ async function getUserEmail() {
 async function fetchPageCount(email) {
     console.log(`🔍 Fetching page count for ${email} from Supabase...`);
     try {
-        const response = await fetch(`${SUPABASE_URL}/rest/v1/usage?user_email=eq.${email}`, {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/usage?user_email=eq.${email.toLowerCase()}`, {
             method: 'GET',
             headers: {
                 'apikey': SUPABASE_ANON_KEY,
@@ -109,7 +118,7 @@ async function fetchPageCount(email) {
             return null;
         }
 
-        return data[0]; // Return the first result
+        return data[0];
     } catch (error) {
         console.error("❌ Error fetching page count from Supabase:", error);
         return null;
@@ -121,7 +130,7 @@ async function decrementPageCount(email, currentCount) {
     console.log(`🔄 Decrementing page count for ${email}`);
     const newCount = currentCount - 1;
 
-    await fetch(`${SUPABASE_URL}/rest/v1/usage?user_email=eq.${email}`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/usage?user_email=eq.${email.toLowerCase()}`, {
         method: 'PATCH',
         headers: {
             'apikey': SUPABASE_ANON_KEY,
