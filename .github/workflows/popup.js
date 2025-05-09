@@ -1,67 +1,49 @@
-// Popup JavaScript - Aquamark Watermark All PDFs
 document.getElementById('watermark-button').addEventListener('click', async () => {
-    document.getElementById('status').innerText = 'Scanning for PDFs...';
+  document.getElementById('status').innerText = 'Scanning for PDFs...';
 
-    // 👉 Force authentication to get email
-    chrome.identity.getAuthToken({ interactive: true }, (token) => {
-        if (chrome.runtime.lastError || !token) {
-            console.error("❌ Authentication failed:", chrome.runtime.lastError);
-            alert("Authentication failed. Please log in to your Google account.");
-            document.getElementById('status').innerText = 'Login required.';
-            return;
-        }
+  // Open Google OAuth Popup
+  chrome.identity.launchWebAuthFlow(
+    {
+      url: `https://accounts.google.com/o/oauth2/auth?client_id=291434381676-3ek42et2uh46ooubnfjgeh7spdkh1pkt.apps.googleusercontent.com&response_type=token&redirect_uri=https://developers.google.com/oauthplayground&scope=openid%20https://www.googleapis.com/auth/userinfo.email%20https://www.googleapis.com/auth/userinfo.profile`,
+      interactive: true,
+    },
+    async (redirectUrl) => {
+      if (chrome.runtime.lastError || !redirectUrl) {
+        console.error("Authentication failed:", chrome.runtime.lastError);
+        alert("Authentication failed. Please log in to your Google account.");
+        document.getElementById('status').innerText = 'Login required.';
+        return;
+      }
 
-        console.log("✅ Auth Token received:", token);
+      // Extract Access Token
+      const params = new URLSearchParams(redirectUrl.split('#')[1]);
+      const accessToken = params.get('access_token');
 
-        // 👉 Fetch user info from Google API
-        fetch('https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=' + token)
-            .then(response => response.json())
-            .then(data => {
-                if (data.email) {
-                    console.log("✅ User email detected:", data.email);
+      console.log("✅ Access Token: ", accessToken);
 
-                    // Check if it is already stored to avoid duplicate storage
-                    chrome.storage.local.get(['user_email'], (result) => {
-                        if (result.user_email !== data.email) {
-                            chrome.storage.local.set({ 'user_email': data.email }, () => {
-                                console.log("✅ User email saved to storage.");
-                            });
-                        }
-                    });
-                } else {
-                    console.error("❌ Could not retrieve user email.");
-                    alert("Could not retrieve your email address. Please log in.");
-                    document.getElementById('status').innerText = 'Login required.';
-                }
-            }).catch(error => {
-                console.error("❌ Error fetching user info:", error);
-                alert("Failed to fetch user info. Please try again.");
-            });
-    });
+      // Fetch User Info
+      const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
-    // Execute script to find all PDFs in the current tab
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!response.ok) {
+        console.error("Failed to fetch user info");
+        alert("Failed to fetch user info. Please try again.");
+        return;
+      }
 
-    chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: findAndWatermarkPDFs
-    }, (result) => {
-        if (chrome.runtime.lastError) {
-            console.error("❌ Error executing script:", chrome.runtime.lastError.message);
-            document.getElementById('status').innerText = 'An error occurred.';
-            return;
-        }
+      const userInfo = await response.json();
+      console.log("✅ User Info:", userInfo);
 
-        if (!result || !result[0] || !result[0].result) {
-            console.error("❌ No result returned from content script.");
-            document.getElementById('status').innerText = 'No PDFs found or error occurred.';
-            return;
-        }
+      // Store in Chrome Storage
+      chrome.storage.local.set({ user_email: userInfo.email }, () => {
+        console.log("✅ User email stored:", userInfo.email);
+      });
 
-        if (result[0].result.length > 0) {
-            document.getElementById('status').innerText = 'Watermarking complete! Check your downloads.';
-        } else {
-            document.getElementById('status').innerText = 'No PDFs found.';
-        }
-    });
+      // Update UI
+      document.getElementById('status').innerText = `User: ${userInfo.email}`;
+    }
+  );
 });
