@@ -21,6 +21,12 @@
       "js": ["content.js"]
     }
   ],
+  "web_accessible_resources": [
+    {
+      "resources": ["icon16.jpg"],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
