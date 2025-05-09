@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // --- Configuration ---
       const clientId = '291434381676-tvr93t3bir4pp1m7qaf9nv9to9m0g5l7.apps.googleusercontent.com';
-      const redirectUri = `https://${chrome.runtime.id}.chromiumapp.org/`;
+  const redirectUri = 'https://cokdnchabjgblbnacklelpcedbmmdege.chromiumapp.org/';
       const scopes = [
         "openid",
         "https://www.googleapis.com/auth/userinfo.email",
