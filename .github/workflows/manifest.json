@@ -1,49 +1,37 @@
 {
-    "manifest_version": 3,
-    "name": "Aquamark Extension",
-    "version": "1.0",
-    "description": "Aquamark Chrome Extension for Gmail watermarking",
-    "permissions": [
-        "identity",
-        "identity.email",
-        "storage",
-        "activeTab",
-        "scripting"
-    ],
-    "host_permissions": [
-        "https://www.googleapis.com/*",
-        "https://accounts.google.com/*",
-        "https://mail.google.com/*"
-    ],
-    "oauth2": {
-        "client_id": "291434381676-tvr93t3bir4pp1m7qaf9nv9to9m0g5l7.apps.googleusercontent.com",
-        "scopes": [
-            "openid",
-            "email",
-            "profile"
-        ]
-    },
-    "background": {
-        "service_worker": "background.js"
-    },
-    "action": {
-        "default_popup": "popup.html",
-        "default_icon": {
-            "16": "icon16.png",
-            "48": "icon48.png",
-            "128": "icon128.png"
-        }
-    },
-    "content_scripts": [
-        {
-            "matches": ["https://mail.google.com/*"],
-            "js": ["content.js"]
-        }
-    ],
-    "web_accessible_resources": [
-        {
-            "resources": ["icon16.png", "icon48.png", "icon128.png"],
-            "matches": ["https://mail.google.com/*"]
-        }
+  "manifest_version": 3,
+  "name": "Aquamark Watermark Extension",
+  "version": "1.0",
+  "description": "Watermark PDFs directly from Gmail",
+  "permissions": [
+    "identity",
+    "storage",
+    "scripting",
+    "tabs",
+    "activeTab"
+  ],
+  "oauth2": {
+    "client_id": "YOUR_GOOGLE_CLIENT_ID",
+    "scopes": [
+      "openid",
+      "email",
+      "profile"
     ]
+  },
+  "host_permissions": [
+    "https://accounts.google.com/*",
+    "https://www.googleapis.com/*",
+    "https://dvzmnikrvkvgragzhrof.supabase.co/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
 }
