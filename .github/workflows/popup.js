@@ -3,7 +3,7 @@ document.getElementById("watermark-button").addEventListener("click", () => {
 
   // --- Configuration ---
   const clientId = '291434381676-tvr93t3bir4pp1m7qaf9nv9to9m0g5l7.apps.googleusercontent.com';
-  const redirectUri = `https://${chrome.runtime.id}.chromiumapp.org/`;
+  const url = `https://accounts.google.com/o/oauth2/auth?client_id=291434381676-tvr93t3bir4pp1m7qaf9nv9to9m0g5l7.apps.googleusercontent.com&response_type=token&redirect_uri=https://cokdnchabjgblbnacklelpcedbmmdege.chromiumapp.org/&scope=openid%20email%20profile`;
   const scopes = [
     "openid",
     "https://www.googleapis.com/auth/userinfo.email",
