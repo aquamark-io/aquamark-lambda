@@ -1,11 +1,20 @@
-document.getElementById('fetch-email').addEventListener('click', async () => {
-    chrome.identity.getProfileUserInfo((userInfo) => {
-        if (chrome.runtime.lastError) {
-            console.error(chrome.runtime.lastError.message);
-            document.getElementById('result').innerText = "Failed to fetch email.";
-            return;
-        }
-        document.getElementById('result').innerText = userInfo.email ? 
-            `Email: ${userInfo.email}` : 'No email found';
-    });
+// popup.js
+
+document.getElementById('fetchData').addEventListener('click', () => {
+  // Replace this with the actual email you want to test
+  const userEmail = "1christinaduncan@gmail.com";
+
+  chrome.runtime.sendMessage(
+    {
+      action: 'fetchUserData',
+      userEmail: userEmail
+    },
+    (response) => {
+      if (response.success) {
+        document.getElementById('status').innerText = "✅ Data fetched successfully!";
+      } else {
+        document.getElementById('status').innerText = "❌ Failed to fetch data.";
+      }
+    }
+  );
 });
