@@ -1,69 +1,48 @@
-// AWS Lambda Function for Aquamark Chrome Extension
+// Lambda Function Logic
 
 const { createClient } = require('@supabase/supabase-js');
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_KEY;
-const RENDER_URL = process.env.RENDER_URL;
+const SUPABASE_URL = 'https://dvzmnikrvkvgragzhrof.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2em1uaWtydmt2Z3JhZ3pocm9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM5Njg5NzUsImV4cCI6MjA1OTU0NDk3NX0.FaHsjIRNlgf6YWbe5foz0kJFtCO4FuVFo7KVcfhKPEk';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 exports.handler = async (event) => {
-    const { user_email } = JSON.parse(event.body);
-
     try {
-        // Normalize the email to lowercase to match Supabase records
-        const normalizedEmail = user_email.toLowerCase();
+        const body = JSON.parse(event.body);
+        const user_email = body.user_email.toLowerCase();
 
-        // 1. Fetch the list of objects in the user's folder
-        const { data: logoList, error: listError } = await supabase
-            .storage
-            .from('logos')
-            .list(normalizedEmail, { limit: 1 });
-
-        if (listError || logoList.length === 0) {
-            console.error('Logo fetch failed:', listError);
-            return {
-                statusCode: 404,
-                body: JSON.stringify({ error: 'Logo not found in storage.' })
-            };
-        }
-
-        // 2. Get the first logo file (there should only be one)
-        const logo_filename = logoList[0].name;
-        const logo_url = `https://dvzmnikrvkvgragzhrof.supabase.co/storage/v1/object/public/logos/${normalizedEmail}/${logo_filename}`;
-
-        // 3. Fetch usage data from Supabase
+        // Query the usage table
         const { data, error } = await supabase
             .from('usage')
-            .select('page_credits, pages_used, plan_name')
-            .eq('user_email', normalizedEmail)
+            .select('logo_url, pages_remaining, pages_used, plan_name')
+            .eq('user_email', user_email)
             .single();
 
         if (error || !data) {
-            console.error('Data retrieval failed:', error);
+            console.error('Error fetching data:', error);
             return {
                 statusCode: 404,
-                body: JSON.stringify({ error: 'User not found or data retrieval failed.' })
+                body: JSON.stringify({ error: "User not found or data retrieval failed." })
             };
         }
 
-        // 4. Return the user data with the logo URL
+        // Construct the response
         return {
             statusCode: 200,
             body: JSON.stringify({
-                logo_url: logo_url,
-                page_credits: data.page_credits,
+                logo_url: `https://dvzmnikrvkvgragzhrof.supabase.co/storage/v1/object/public/logos/${user_email}/${data.logo_url}`,
+                pages_remaining: data.pages_remaining,
                 pages_used: data.pages_used,
                 plan_name: data.plan_name
             })
         };
 
     } catch (err) {
-        console.error('Error fetching data:', err);
+        console.error('Function error:', err);
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: 'Internal Server Error' })
+            body: JSON.stringify({ error: "Internal Server Error" })
         };
     }
 };
