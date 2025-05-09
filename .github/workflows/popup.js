@@ -2,6 +2,27 @@
 document.getElementById('watermark-button').addEventListener('click', async () => {
     document.getElementById('status').innerText = 'Scanning for PDFs...';
 
+    // Store email in chrome storage before processing
+    chrome.identity.getProfileUserInfo((userInfo) => {
+        if (userInfo.email) {
+            console.log("✅ User email detected:", userInfo.email);
+
+            // Check if it is already stored to avoid duplicate storage
+            chrome.storage.local.get(['user_email'], (result) => {
+                if (result.user_email !== userInfo.email) {
+                    chrome.storage.local.set({ 'user_email': userInfo.email }, () => {
+                        console.log("✅ User email saved to storage.");
+                    });
+                }
+            });
+        } else {
+            console.error("❌ Could not retrieve user email.");
+            alert("Could not retrieve your email address. Please log in.");
+            document.getElementById('status').innerText = 'Login required.';
+            return;
+        }
+    });
+
     try {
         // Execute script to find all PDFs in the current tab
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -10,7 +31,13 @@ document.getElementById('watermark-button').addEventListener('click', async () =
             target: { tabId: tab.id },
             func: findAndWatermarkPDFs
         }, (result) => {
-            if (result[0].result.length > 0) {
+            if (chrome.runtime.lastError) {
+                console.error("❌ Error executing script:", chrome.runtime.lastError.message);
+                document.getElementById('status').innerText = 'An error occurred.';
+                return;
+            }
+
+            if (result[0] && result[0].result.length > 0) {
                 document.getElementById('status').innerText = 'Watermarking complete! Check your downloads.';
             } else {
                 document.getElementById('status').innerText = 'No PDFs found.';
@@ -51,24 +78,14 @@ function findAndWatermarkPDFs() {
         };
     });
 
-    // Store email in chrome storage before processing
-chrome.identity.getProfileUserInfo((userInfo) => {
-    if (userInfo.email) {
-        console.log("✅ User email detected:", userInfo.email);
-        chrome.storage.local.set({ 'user_email': userInfo.email }, () => {
-            console.log("✅ User email saved to storage.");
-        });
-    } else {
-        console.error("❌ Could not retrieve user email.");
-        alert("Could not retrieve your email address. Please log in.");
-    }
-});
-
-
     // Watermark each PDF
     pdfLinks.forEach(async ({ fileName, url }) => {
-        console.log(`📄 Processing PDF: ${fileName} at ${url}`);
-        await chrome.runtime.sendMessage({ action: 'watermarkPDF', url });
+        try {
+            console.log(`📄 Processing PDF: ${fileName} at ${url}`);
+            await chrome.runtime.sendMessage({ action: 'watermarkPDF', url });
+        } catch (error) {
+            console.error(`❌ Failed to process PDF: ${fileName} at ${url}`, error);
+        }
     });
 
     return pdfLinks;
