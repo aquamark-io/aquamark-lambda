@@ -1,49 +1,40 @@
 document.getElementById('watermark-button').addEventListener('click', async () => {
-  document.getElementById('status').innerText = 'Scanning for PDFs...';
+    document.getElementById('status').innerText = 'Scanning for PDFs...';
 
-  // Open Google OAuth Popup
-  chrome.identity.launchWebAuthFlow(
-    {
-      url: `https://accounts.google.com/o/oauth2/auth?client_id=291434381676-3ek42et2uh46ooubnfjgeh7spdkh1pkt.apps.googleusercontent.com&response_type=token&redirect_uri=https://developers.google.com/oauthplayground&scope=openid%20https://www.googleapis.com/auth/userinfo.email%20https://www.googleapis.com/auth/userinfo.profile`,
-      interactive: true,
-    },
-    async (redirectUrl) => {
-      if (chrome.runtime.lastError || !redirectUrl) {
-        console.error("Authentication failed:", chrome.runtime.lastError);
-        alert("Authentication failed. Please log in to your Google account.");
-        document.getElementById('status').innerText = 'Login required.';
-        return;
-      }
+    // 🔄 OAuth URL for Google Sign-In
+    const url = `https://accounts.google.com/o/oauth2/auth?client_id=291434381676-3ek42et2uh46ooubnfjgeh7spdkh1pkt.apps.googleusercontent.com&response_type=token&redirect_uri=chrome-extension://<YOUR_EXTENSION_ID>/popup.html&scope=openid%20https://www.googleapis.com/auth/userinfo.email%20https://www.googleapis.com/auth/userinfo.profile`;
 
-      // Extract Access Token
-      const params = new URLSearchParams(redirectUrl.split('#')[1]);
-      const accessToken = params.get('access_token');
+    // 🔄 Open the sign-in window
+    chrome.identity.launchWebAuthFlow({
+        url: url,
+        interactive: true,
+    }, (redirectUrl) => {
+        if (chrome.runtime.lastError) {
+            console.error("❌ Authentication Error: ", chrome.runtime.lastError.message);
+            alert("Authentication failed. Please log in to your Google account.");
+            document.getElementById('status').innerText = 'Login required.';
+            return;
+        }
 
-      console.log("✅ Access Token: ", accessToken);
+        console.log("🔄 Redirect URL: ", redirectUrl);
 
-      // Fetch User Info
-      const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+        // ✅ Token Handler
+        if (redirectUrl) {
+            const hash = new URL(redirectUrl).hash.substring(1);
+            const params = new URLSearchParams(hash);
+            const token = params.get('access_token');
 
-      if (!response.ok) {
-        console.error("Failed to fetch user info");
-        alert("Failed to fetch user info. Please try again.");
-        return;
-      }
+            if (token) {
+                console.log(`✅ Access Token: ${token}`);
 
-      const userInfo = await response.json();
-      console.log("✅ User Info:", userInfo);
-
-      // Store in Chrome Storage
-      chrome.storage.local.set({ user_email: userInfo.email }, () => {
-        console.log("✅ User email stored:", userInfo.email);
-      });
-
-      // Update UI
-      document.getElementById('status').innerText = `User: ${userInfo.email}`;
-    }
-  );
+                // Now you can store it or use it to get user info
+                chrome.storage.local.set({ google_token: token }, () => {
+                    console.log("🔒 Token stored locally.");
+                    document.getElementById('status').innerText = 'Authenticated. Scanning for PDFs...';
+                });
+            } else {
+                console.error("❌ Token not found in URL.");
+            }
+        }
+    });
 });
