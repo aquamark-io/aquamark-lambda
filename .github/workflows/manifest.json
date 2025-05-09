@@ -8,9 +8,12 @@
         "identity.email",
         "storage",
         "activeTab",
-        "scripting",
+        "scripting"
+    ],
+    "host_permissions": [
         "https://www.googleapis.com/*",
-        "https://accounts.google.com/*"
+        "https://accounts.google.com/*",
+        "https://mail.google.com/*"
     ],
     "oauth2": {
         "client_id": "291434381676-tvr93t3bir4pp1m7qaf9nv9to9m0g5l7.apps.googleusercontent.com",
@@ -23,9 +26,6 @@
     "background": {
         "service_worker": "background.js"
     },
-    "host_permissions": [
-        "https://mail.google.com/*"
-    ],
     "action": {
         "default_popup": "popup.html",
         "default_icon": {
@@ -33,5 +33,17 @@
             "48": "icon48.png",
             "128": "icon128.png"
         }
-    }
+    },
+    "content_scripts": [
+        {
+            "matches": ["https://mail.google.com/*"],
+            "js": ["content.js"]
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": ["icon16.png", "icon48.png", "icon128.png"],
+            "matches": ["https://mail.google.com/*"]
+        }
+    ]
 }
