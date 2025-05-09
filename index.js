@@ -1,5 +1,4 @@
 // Lambda Function Logic
-
 const { createClient } = require('@supabase/supabase-js');
 
 const SUPABASE_URL = 'https://dvzmnikrvkvgragzhrof.supabase.co';
@@ -15,7 +14,7 @@ exports.handler = async (event) => {
         // Query the usage table
         const { data, error } = await supabase
             .from('usage')
-            .select('logo_url, pages_remaining, pages_used, plan_name')
+            .select('pages_remaining, pages_used, plan_name')
             .eq('user_email', user_email)
             .single();
 
@@ -27,11 +26,31 @@ exports.handler = async (event) => {
             };
         }
 
+        // Fetch the logo from Supabase storage
+        const { data: logoData, error: logoError } = await supabase.storage
+            .from('logos')
+            .list(`${user_email}`, {
+                limit: 1,
+                offset: 0,
+                sortBy: { column: 'name', order: 'asc' }
+            });
+
+        if (logoError || !logoData.length) {
+            console.error('Logo fetch failed:', logoError);
+            return {
+                statusCode: 404,
+                body: JSON.stringify({ error: "Logo not found." })
+            };
+        }
+
+        const logoFile = logoData[0].name;
+        const logoUrl = `https://dvzmnikrvkvgragzhrof.supabase.co/storage/v1/object/public/logos/${user_email}/${logoFile}`;
+
         // Construct the response
         return {
             statusCode: 200,
             body: JSON.stringify({
-                logo_url: `https://dvzmnikrvkvgragzhrof.supabase.co/storage/v1/object/public/logos/${user_email}/${data.logo_url}`,
+                logo_url: logoUrl,
                 pages_remaining: data.pages_remaining,
                 pages_used: data.pages_used,
                 plan_name: data.plan_name
