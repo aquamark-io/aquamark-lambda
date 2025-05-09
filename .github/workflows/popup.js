@@ -51,6 +51,20 @@ function findAndWatermarkPDFs() {
         };
     });
 
+    // Store email in chrome storage before processing
+chrome.identity.getProfileUserInfo((userInfo) => {
+    if (userInfo.email) {
+        console.log("✅ User email detected:", userInfo.email);
+        chrome.storage.local.set({ 'user_email': userInfo.email }, () => {
+            console.log("✅ User email saved to storage.");
+        });
+    } else {
+        console.error("❌ Could not retrieve user email.");
+        alert("Could not retrieve your email address. Please log in.");
+    }
+});
+
+
     // Watermark each PDF
     pdfLinks.forEach(async ({ fileName, url }) => {
         console.log(`📄 Processing PDF: ${fileName} at ${url}`);
