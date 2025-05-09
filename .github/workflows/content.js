@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("🔄 Mutation Detected - Attempting to Inject Icon");
         setTimeout(() => {
           injectIcon();
-        }, 1000); // Wait 1 second to ensure DOM is ready
+        }, 1000); // Wait for DOM to stabilize
       }
     });
   });
@@ -15,7 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
   observer.observe(document.body, { childList: true, subtree: true });
 
   function injectIcon() {
-    const attachmentCards = document.querySelectorAll('.aV3 .aZo');
+    // This is our new confirmed selector
+    const attachmentCards = document.querySelectorAll('div[data-tooltip*="Download"]');
 
     console.log(`🔎 Found ${attachmentCards.length} Attachment Cards`);
     if (attachmentCards.length === 0) {
@@ -26,23 +27,30 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!card.parentElement.querySelector('.aquamark-icon-button')) {
         console.log("✅ Icon is being injected");
 
+        // Create the Aquamark button
         const iconButton = document.createElement('img');
         iconButton.src = chrome.runtime.getURL('icon16.jpg');
         iconButton.classList.add('aquamark-icon-button');
         iconButton.style.cssText = `
           width: 20px;
           height: 20px;
-          margin-left: 5px;
+          margin-left: 8px;
           cursor: pointer;
         `;
 
         iconButton.addEventListener('click', async () => {
           console.log("🖱️ Aquamark Icon Clicked!");
-          const downloadLink = card.querySelector('[data-tooltip="Download"]').href;
-          await chrome.runtime.sendMessage({ action: 'watermarkPDF', url: downloadLink });
+          const downloadLink = card.getAttribute('href');
+          if (downloadLink) {
+            console.log("🔗 Download link found, sending to background.js");
+            await chrome.runtime.sendMessage({ action: 'watermarkPDF', url: downloadLink });
+          } else {
+            console.error("❌ Download link not found.");
+          }
         });
 
-        card.appendChild(iconButton);
+        // Attach it right next to the Download button
+        card.parentElement.appendChild(iconButton);
       }
     });
   }
