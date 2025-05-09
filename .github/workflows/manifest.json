@@ -1,57 +1,37 @@
 {
-  "manifest_version": 3,
-  "name": "Aquamark Extension",
-  "description": "Watermark and Protect Your PDFs Instantly",
-  "version": "1.0",
-  "permissions": [
-    "identity",
-    "identity.email",
-    "storage"
-  ],
-  "host_permissions": [
-    "https://www.googleapis.com/*",
-    "https://accounts.google.com/*",
-    "https://people.googleapis.com/*"
-  ],
-  "oauth2": {
-    "client_id": "291434381676-tvr93t3bir4pp1m7qaf9nv9to9m0g5l7.apps.googleusercontent.com",
-    "scopes": [
-      "openid",
-      "email",
-      "profile",
-      "https://www.googleapis.com/auth/userinfo.email",
-      "https://www.googleapis.com/auth/userinfo.profile"
-    ]
-  },
-  "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self';"
-  },
-  "background": {
-    "service_worker": "background.js"
-  },
-  "content_scripts": [
-    {
-      "matches": ["https://mail.google.com/*"],
-      "js": ["content.js"]
+    "manifest_version": 3,
+    "name": "Aquamark Extension",
+    "version": "1.0",
+    "description": "Aquamark Chrome Extension for Gmail watermarking",
+    "permissions": [
+        "identity",
+        "identity.email",
+        "storage",
+        "activeTab",
+        "scripting",
+        "https://www.googleapis.com/*",
+        "https://accounts.google.com/*"
+    ],
+    "oauth2": {
+        "client_id": "291434381676-tvr93t3bir4pp1m7qaf9nv9to9m0g5l7.apps.googleusercontent.com",
+        "scopes": [
+            "openid",
+            "email",
+            "profile"
+        ]
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "host_permissions": [
+        "https://mail.google.com/*"
+    ],
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": {
+            "16": "icon16.png",
+            "48": "icon48.png",
+            "128": "icon128.png"
+        }
     }
-  ],
-  "web_accessible_resources": [
-    {
-      "resources": ["icon16.jpg"],
-      "matches": ["<all_urls>"]
-    }
-  ],
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icon16.jpg",
-      "48": "icon48.jpg",
-      "128": "icon128.jpg"
-    }
-  },
-  "icons": {
-    "16": "icon16.jpg",
-    "48": "icon48.jpg",
-    "128": "icon128.jpg"
-  }
 }
