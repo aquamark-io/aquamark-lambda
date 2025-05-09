@@ -1,72 +1,39 @@
-// content.js
-
-// Wait for Gmail to load
-const observeGmail = () => {
-  const targetNode = document.body;
-  const config = { childList: true, subtree: true };
-
-  const callback = (mutationsList, observer) => {
-    for (const mutation of mutationsList) {
-      if (mutation.type === 'childList') {
-        // Find all attachment containers
-        const attachmentCards = document.querySelectorAll('div.aQH span.aZo');
-
-        attachmentCards.forEach((card) => {
-          const filename = card.textContent;
-
-          // Check if it's a PDF
-          if (filename.endsWith('.pdf') && !card.parentNode.querySelector('.watermark-btn')) {
-            // Create button if not already added
-            const button = document.createElement('button');
-            button.innerText = 'Watermark with Aquamark';
-            button.classList.add('watermark-btn');
-            button.style.cssText = "margin-left: 5px; background-color: #1a73e8; color: white; border: none; padding: 5px; border-radius: 3px; cursor: pointer;";
-
-            // Attach click event
-            button.onclick = async () => {
-              try {
-                const pdfBase64 = await getAttachmentBase64(card);
-                chrome.runtime.sendMessage({
-                  action: 'watermarkPDF',
-                  filename: filename,
-                  data: pdfBase64
-                });
-              } catch (error) {
-                console.error("Failed to fetch PDF:", error);
-              }
-            };
-
-            card.parentNode.appendChild(button);
-          }
-        });
+document.addEventListener('DOMContentLoaded', () => {
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.addedNodes.length > 0) {
+        injectIcon();
       }
-    }
-  };
-
-  const observer = new MutationObserver(callback);
-  observer.observe(targetNode, config);
-};
-
-// Base64 Fetch Logic
-const getAttachmentBase64 = (card) => {
-  return new Promise((resolve, reject) => {
-    const attachmentUrl = card.closest('a').href;
-
-    fetch(attachmentUrl, {
-      headers: {
-        'Authorization': 'Bearer ' + localStorage.getItem('gmailAuthToken')
-      }
-    })
-    .then((response) => response.blob())
-    .then((blob) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result.split(',')[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    })
-    .catch(reject);
+    });
   });
-};
 
-// Start observing
-observeGmail();
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  function injectIcon() {
+    const attachmentCards = document.querySelectorAll('[data-tooltip="Download"]');
+
+    attachmentCards.forEach((card) => {
+      if (!card.parentElement.querySelector('.aquamark-icon-button')) {
+        // Create the icon button
+        const iconButton = document.createElement('img');
+        iconButton.src = chrome.runtime.getURL('icon16.jpg');
+        iconButton.classList.add('aquamark-icon-button');
+        iconButton.style.cssText = `
+          width: 20px;
+          height: 20px;
+          margin-left: 5px;
+          cursor: pointer;
+        `;
+
+        // Event listener to start watermarking on click
+        iconButton.addEventListener('click', async () => {
+          const downloadLink = card.href;
+          await chrome.runtime.sendMessage({ action: 'watermarkPDF', url: downloadLink });
+        });
+
+        // Inject the icon into the attachment card
+        card.parentElement.appendChild(iconButton);
+      }
+    });
+  }
+});
