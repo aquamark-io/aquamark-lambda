@@ -63,4 +63,37 @@ function findAndWatermarkPDFs() {
     // Find all spans with download_url containing PDF links
     const pdfSpans = Array.from(document.querySelectorAll('span[download_url^="application/pdf"]'));
 
-    if (pdf
+    if (pdfSpans.length === 0) {
+        console.error("❌ No PDFs found");
+        return [];
+    }
+
+    // Extract the URLs and file names
+    const pdfLinks = pdfSpans.map(span => {
+        const downloadUrl = span.getAttribute('download_url');
+        const parts = downloadUrl.split(':');
+        const fileName = parts[1];
+        const url = parts.slice(3).join(':');
+
+        // Ensure the URL is formatted correctly
+        const cleanUrl = url.startsWith('//') ? `https:${url}` : url;
+
+        console.log("✅ Found PDF:", cleanUrl);
+        return {
+            fileName,
+            url: cleanUrl
+        };
+    });
+
+    // Watermark each PDF
+    pdfLinks.forEach(async ({ fileName, url }) => {
+        try {
+            console.log(`📄 Processing PDF: ${fileName} at ${url}`);
+            await chrome.runtime.sendMessage({ action: 'watermarkPDF', url });
+        } catch (error) {
+            console.error(`❌ Failed to process PDF: ${fileName} at ${url}`, error);
+        }
+    });
+
+    return pdfLinks;
+}
