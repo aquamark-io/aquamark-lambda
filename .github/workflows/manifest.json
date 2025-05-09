@@ -10,7 +10,7 @@
   ],
   "host_permissions": [
     "https://mail.google.com/*",
-    "<YOUR_LAMBDA_URL>"
+    "<https://jl47smynwk.execute-api.us-east-2.amazonaws.com/default>"
   ],
   "background": {
     "service_worker": "background.js"
