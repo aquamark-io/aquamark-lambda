@@ -4,22 +4,20 @@
   "description": "Watermark and Protect Your PDFs Instantly",
   "version": "1.0",
   "permissions": [
-    "identity",
-    "identity.email",
     "storage",
     "activeTab",
-    "scripting",
-    "tabs"
+    "scripting"
   ],
   "host_permissions": [
-    "<all_urls>"
+    "https://mail.google.com/*",
+    "<YOUR_LAMBDA_URL>"
   ],
   "background": {
     "service_worker": "background.js"
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": ["https://mail.google.com/*"],
       "js": ["content.js"]
     }
   ],
