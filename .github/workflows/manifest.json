@@ -5,11 +5,14 @@
   "version": "1.0",
   "permissions": [
     "storage",
-    "activeTab",
-    "scripting"
+    "identity",
+    "identity.email",
+    "scripting",
+    "activeTab"
   ],
   "host_permissions": [
     "https://mail.google.com/*",
+    "https://www.googleapis.com/*",
     "https://jl47smynwk.execute-api.us-east-2.amazonaws.com/default"
   ],
   "background": {
@@ -17,14 +20,13 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://mail.google.com/*"],
-      "js": ["content.js"],
-      "run_at": "document_end"
+      "matches": ["https://mail.google.com/*"],
+      "js": ["content.js"]
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["icon16.jpg", "icon48.jpg", "icon128.jpg"],
+      "resources": ["icon16.jpg"],
       "matches": ["<all_urls>"]
     }
   ],
