@@ -1,6 +1,6 @@
 // background.js
 
-const LAMBDA_URL = 'https://jl47smynwk.execute-api.us-east-2.amazonaws.com/default/fetchUserData';
+const LAMBDA_URL = 'https://jl47smynwk.execute-api.us-east-2.amazonaws.com/default/AquamarkHandler';
 
 async function fetchUserData(userEmail) {
     try {
