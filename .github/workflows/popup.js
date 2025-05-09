@@ -10,7 +10,7 @@ document.getElementById('watermark-button').addEventListener('click', async () =
             target: { tabId: tab.id },
             func: findAndWatermarkPDFs
         }, (result) => {
-            if (result[0].result) {
+            if (result[0].result.length > 0) {
                 document.getElementById('status').innerText = 'Watermarking complete! Check your downloads.';
             } else {
                 document.getElementById('status').innerText = 'No PDFs found.';
@@ -24,22 +24,38 @@ document.getElementById('watermark-button').addEventListener('click', async () =
 
 // Function to find and watermark all PDFs
 function findAndWatermarkPDFs() {
-    // Find all attachment cards in Gmail
-    const attachmentCards = document.querySelectorAll('div[data-tooltip="Download"]');
-    
-    if (attachmentCards.length === 0) {
-        console.log("❌ No attachments found");
-        return false;
+    console.log("🔍 Scanning Gmail for PDFs...");
+
+    // Find all spans with download_url containing PDF links
+    const pdfSpans = Array.from(document.querySelectorAll('span[download_url^="application/pdf"]'));
+
+    if (pdfSpans.length === 0) {
+        console.error("❌ No PDFs found");
+        return [];
     }
 
-    // Extract the URLs and watermark each one
-    attachmentCards.forEach(async (card) => {
-        const downloadLink = card.closest('a').href;
-        if (downloadLink.includes('.pdf')) {
-            console.log('✅ Processing PDF:', downloadLink);
-            await chrome.runtime.sendMessage({ action: 'watermarkPDF', url: downloadLink });
-        }
+    // Extract the URLs and file names
+    const pdfLinks = pdfSpans.map(span => {
+        const downloadUrl = span.getAttribute('download_url');
+        const parts = downloadUrl.split(':');
+        const fileName = parts[1];
+        const url = parts.slice(3).join(':');
+
+        // Ensure the URL is formatted correctly
+        const cleanUrl = url.startsWith('//') ? `https:${url}` : url;
+
+        console.log("✅ Found PDF:", cleanUrl);
+        return {
+            fileName,
+            url: cleanUrl
+        };
     });
 
-    return true;
+    // Watermark each PDF
+    pdfLinks.forEach(async ({ fileName, url }) => {
+        console.log(`📄 Processing PDF: ${fileName} at ${url}`);
+        await chrome.runtime.sendMessage({ action: 'watermarkPDF', url });
+    });
+
+    return pdfLinks;
 }
