@@ -1,11 +1,11 @@
 // Popup JavaScript - Aquamark Watermark All PDFs
-
 document.getElementById('watermark-button').addEventListener('click', async () => {
     document.getElementById('status').innerText = 'Scanning for PDFs...';
 
     try {
         // Execute script to find all PDFs in the current tab
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
         chrome.scripting.executeScript({
             target: { tabId: tab.id },
             func: findAndWatermarkPDFs
@@ -24,13 +24,21 @@ document.getElementById('watermark-button').addEventListener('click', async () =
 
 // Function to find and watermark all PDFs
 function findAndWatermarkPDFs() {
-    const pdfLinks = Array.from(document.querySelectorAll('a[href$=".pdf"]'));
-    if (pdfLinks.length === 0) return false;
+    // Find all attachment cards in Gmail
+    const attachmentCards = document.querySelectorAll('div[data-tooltip="Download"]');
+    
+    if (attachmentCards.length === 0) {
+        console.log("❌ No attachments found");
+        return false;
+    }
 
-    pdfLinks.forEach(async (link) => {
-        const fileUrl = link.href;
-        console.log('Processing PDF:', fileUrl);
-        await chrome.runtime.sendMessage({ action: 'watermarkPDF', url: fileUrl });
+    // Extract the URLs and watermark each one
+    attachmentCards.forEach(async (card) => {
+        const downloadLink = card.closest('a').href;
+        if (downloadLink.includes('.pdf')) {
+            console.log('✅ Processing PDF:', downloadLink);
+            await chrome.runtime.sendMessage({ action: 'watermarkPDF', url: downloadLink });
+        }
     });
 
     return true;
