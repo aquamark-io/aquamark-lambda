@@ -37,7 +37,14 @@ document.getElementById('watermark-button').addEventListener('click', async () =
                 return;
             }
 
-            if (result[0] && result[0].result.length > 0) {
+            // ✅ Null Check to Prevent Crashes
+            if (!result || !result[0] || !result[0].result) {
+                console.error("❌ No result returned from content script.");
+                document.getElementById('status').innerText = 'No PDFs found or error occurred.';
+                return;
+            }
+
+            if (result[0].result.length > 0) {
                 document.getElementById('status').innerText = 'Watermarking complete! Check your downloads.';
             } else {
                 document.getElementById('status').innerText = 'No PDFs found.';
@@ -56,37 +63,4 @@ function findAndWatermarkPDFs() {
     // Find all spans with download_url containing PDF links
     const pdfSpans = Array.from(document.querySelectorAll('span[download_url^="application/pdf"]'));
 
-    if (pdfSpans.length === 0) {
-        console.error("❌ No PDFs found");
-        return [];
-    }
-
-    // Extract the URLs and file names
-    const pdfLinks = pdfSpans.map(span => {
-        const downloadUrl = span.getAttribute('download_url');
-        const parts = downloadUrl.split(':');
-        const fileName = parts[1];
-        const url = parts.slice(3).join(':');
-
-        // Ensure the URL is formatted correctly
-        const cleanUrl = url.startsWith('//') ? `https:${url}` : url;
-
-        console.log("✅ Found PDF:", cleanUrl);
-        return {
-            fileName,
-            url: cleanUrl
-        };
-    });
-
-    // Watermark each PDF
-    pdfLinks.forEach(async ({ fileName, url }) => {
-        try {
-            console.log(`📄 Processing PDF: ${fileName} at ${url}`);
-            await chrome.runtime.sendMessage({ action: 'watermarkPDF', url });
-        } catch (error) {
-            console.error(`❌ Failed to process PDF: ${fileName} at ${url}`, error);
-        }
-    });
-
-    return pdfLinks;
-}
+    if (pdf
