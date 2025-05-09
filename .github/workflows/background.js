@@ -9,8 +9,16 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         try {
             // Step 1: Check pages remaining from Supabase
             const userEmail = await getUserEmail();
-            const { pages_remaining } = await fetchPageCount(userEmail);
+            const userData = await fetchPageCount(userEmail);
 
+            if (!userData || !userData.pages_remaining) {
+                console.error("❌ No record found or pages remaining is undefined.");
+                alert("You have no remaining pages left. Please upgrade your plan.");
+                sendResponse({ success: false, message: "No pages remaining" });
+                return;
+            }
+
+            const pages_remaining = userData.pages_remaining;
             console.log(`📄 Pages remaining for ${userEmail}: ${pages_remaining}`);
 
             if (pages_remaining <= 0) {
@@ -41,7 +49,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
             const watermarkedBlob = await applyWatermark(pdfBlob);
 
             // Step 4: Decrement page count and update Supabase
-            await decrementPageCount(userEmail);
+            await decrementPageCount(userEmail, pages_remaining);
 
             // Step 5: Trigger download of the watermarked PDF
             const url = URL.createObjectURL(watermarkedBlob);
@@ -82,7 +90,6 @@ async function getUserEmail() {
 // Function to fetch page count from Supabase
 async function fetchPageCount(email) {
     console.log(`🔍 Fetching page count for ${email} from Supabase...`);
-    
     try {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/usage?user_email=eq.${email}`, {
             method: 'GET',
@@ -99,26 +106,22 @@ async function fetchPageCount(email) {
 
         if (data.length === 0) {
             console.error("❌ No record found for this user in Supabase.");
-            alert("No record found for this user. Please check your account.");
-            return { pages_remaining: 0 };  // Return 0 if no record found
+            return null;
         }
 
         return data[0]; // Return the first result
     } catch (error) {
         console.error("❌ Error fetching page count from Supabase:", error);
-        alert("Failed to fetch page count. Check console for details.");
-        return { pages_remaining: 0 }; // Safe fallback
+        return null;
     }
 }
 
-    const data = await response.json();
-    return data[0]; // Return the first result
-}
-
 // Function to decrement page count
-async function decrementPageCount(email) {
+async function decrementPageCount(email, currentCount) {
     console.log(`🔄 Decrementing page count for ${email}`);
-    await fetch(`${SUPABASE_URL}/rest/v1/usage`, {
+    const newCount = currentCount - 1;
+
+    await fetch(`${SUPABASE_URL}/rest/v1/usage?user_email=eq.${email}`, {
         method: 'PATCH',
         headers: {
             'apikey': SUPABASE_ANON_KEY,
@@ -127,7 +130,9 @@ async function decrementPageCount(email) {
             'Prefer': 'return=minimal'
         },
         body: JSON.stringify({
-            pages_remaining: 'pages_remaining - 1'
+            pages_remaining: newCount
         })
     });
+
+    console.log(`✅ New page count for ${email}: ${newCount}`);
 }
