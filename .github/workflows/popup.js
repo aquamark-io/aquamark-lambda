@@ -1,5 +1,5 @@
 const clientId = "291434381676-tvr93t3bir4pp1m7qaf9nv9to9m0g5l7.apps.googleusercontent.com";
-const redirectUri = chrome.identity.getRedirectURL("oauth2");
+const redirectUri = "https://oauth2.googleapis.com/token";
 
 const url = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=openid%20https://www.googleapis.com/auth/userinfo.email%20https://www.googleapis.com/auth/userinfo.profile`;
 
@@ -30,6 +30,18 @@ chrome.identity.launchWebAuthFlow({
                 console.log("🔒 Token stored locally.");
                 document.getElementById('status').innerText = 'Authenticated. Scanning for PDFs...';
             });
+
+            // 🚀 Optional: Fetch User Info
+            fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("👤 User Info: ", data);
+            })
+            .catch(error => console.error("❌ Error Fetching User Info: ", error));
         } else {
             console.error("❌ Token not found in URL.");
         }
