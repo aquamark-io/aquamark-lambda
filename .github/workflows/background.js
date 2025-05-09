@@ -84,8 +84,8 @@ async function fetchPageCount(email) {
     const response = await fetch(`${SUPABASE_URL}/rest/v1/usage?user_email=eq.${email}`, {
         method: 'GET',
         headers: {
-            'apikey': SUPABASE_API_KEY,
-            'Authorization': `Bearer ${SUPABASE_API_KEY}`,
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
             'Content-Type': 'application/json',
             'Prefer': 'return=minimal'
         }
@@ -101,8 +101,8 @@ async function decrementPageCount(email) {
     await fetch(`${SUPABASE_URL}/rest/v1/usage`, {
         method: 'PATCH',
         headers: {
-            'apikey': SUPABASE_API_KEY,
-            'Authorization': `Bearer ${SUPABASE_API_KEY}`,
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
             'Content-Type': 'application/json',
             'Prefer': 'return=minimal'
         },
