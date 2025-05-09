@@ -2,24 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aquamark - Watermark PDFs</title>
-    <link rel="stylesheet" href="popup.css">
+    <title>Aquamark Login</title>
+    <style>
+        body {
+            font-family: Inter, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        button {
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #357ae8;
+        }
+    </style>
 </head>
 <body>
-    <div class="popup-container">
-        <h1>Aquamark</h1>
-        <p class="description">Secure your documents in one click.</p>
-        
-        <!-- ✅ New Login Button -->
-        <button id="login-button">Login with Google</button>
-        
-        <button id="watermark-button">Watermark</button>
-        
-        <!-- ✅ New Status Area -->
-        <p id="status" class="status-text">Not logged in</p>
-    </div>
-
+    <button id="google-login">Login with Google</button>
     <script src="popup.js"></script>
 </body>
 </html>
