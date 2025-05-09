@@ -2,7 +2,7 @@ document.getElementById('watermark-button').addEventListener('click', async () =
     document.getElementById('status').innerText = 'Scanning for PDFs...';
 
     // 🔄 OAuth URL for Google Sign-In
-    const url = `https://accounts.google.com/o/oauth2/auth?client_id=291434381676-3ek42et2uh46ooubnfjgeh7spdkh1pkt.apps.googleusercontent.com&response_type=token&redirect_uri=chrome-extension://<YOUR_EXTENSION_ID>/popup.html&scope=openid%20https://www.googleapis.com/auth/userinfo.email%20https://www.googleapis.com/auth/userinfo.profile`;
+    const url = `https://accounts.google.com/o/oauth2/auth?client_id=291434381676-3ek42et2uh46ooubnfjgeh7spdkh1pkt.apps.googleusercontent.com&response_type=token&redirect_uri=chrome-extension://cokdnchabjgblbnacklelpcedbmmdege/popup.html&scope=openid%20https://www.googleapis.com/auth/userinfo.email%20https://www.googleapis.com/auth/userinfo.profile`;
 
     // 🔄 Open the sign-in window
     chrome.identity.launchWebAuthFlow({
