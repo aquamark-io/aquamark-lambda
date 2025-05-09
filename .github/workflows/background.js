@@ -81,15 +81,35 @@ async function getUserEmail() {
 
 // Function to fetch page count from Supabase
 async function fetchPageCount(email) {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/usage?user_email=eq.${email}`, {
-        method: 'GET',
-        headers: {
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
+    console.log(`🔍 Fetching page count for ${email} from Supabase...`);
+    
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/usage?user_email=eq.${email}`, {
+            method: 'GET',
+            headers: {
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=minimal'
+            }
+        });
+
+        const data = await response.json();
+        console.log("📄 Supabase Response:", data);
+
+        if (data.length === 0) {
+            console.error("❌ No record found for this user in Supabase.");
+            alert("No record found for this user. Please check your account.");
+            return { pages_remaining: 0 };  // Return 0 if no record found
         }
-    });
+
+        return data[0]; // Return the first result
+    } catch (error) {
+        console.error("❌ Error fetching page count from Supabase:", error);
+        alert("Failed to fetch page count. Check console for details.");
+        return { pages_remaining: 0 }; // Safe fallback
+    }
+}
 
     const data = await response.json();
     return data[0]; // Return the first result
