@@ -22,7 +22,7 @@ async function fetchUserData(userEmail) {
         // Store in chrome storage for later use
         chrome.storage.local.set({
             logo_url: data.logo_url,
-            page_credits: data.page_credits,
+            pages_remaining: data.page_credits,
             pages_used: data.pages_used,
             plan_name: data.plan_name
         }, () => {
