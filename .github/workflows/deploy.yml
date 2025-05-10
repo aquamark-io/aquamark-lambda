@@ -35,7 +35,7 @@ jobs:
         aws lambda create-function \
           --function-name AquamarkHandler \
           --runtime nodejs20.x \
-          --role arn:aws:iam::YOUR_ACCOUNT_ID:role/aquamark-lambda-role \
+          --role arn:aws:iam::634488301944:role/aquamark-lambda-role \
           --handler index.handler \
           --zip-file fileb://aquamark-lambda.zip \
           --publish
