@@ -22,8 +22,9 @@ jobs:
         npm install
         ls -la   # List out to verify `node_modules` and `package-lock.json`
 
-    - name: Zip for Lambda
-      run: zip -r aquamark-lambda.zip . -x "node_modules/aws-sdk/*"
+   - name: Zip for Lambda
+     run: |
+      zip -r aquamark-lambda.zip . -x "node_modules/aws-sdk/*"
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
