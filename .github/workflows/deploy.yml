@@ -39,8 +39,18 @@ jobs:
           --zip-file fileb://aquamark-lambda.zip \
           --publish
 
+    - name: 🕐 Wait for Lambda to Finish Deployment
+      run: |
+        echo "Waiting for Lambda to complete deployment..."
+        aws lambda wait function-updated --function-name AquamarkHandler
+        echo "Lambda deployment complete!"
+
     - name: Update Environment Variables
       run: |
         aws lambda update-function-configuration \
           --function-name AquamarkHandler \
           --environment "Variables={SUPABASE_URL=${{ secrets.SUPABASE_URL }}, SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}}"
+
+    - name: 🏷️ Publish New Version
+      run: |
+        aws lambda publish-version --function-name AquamarkHandler
