@@ -15,7 +15,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v2
       with:
-        node-version: '20'    # Node 20 confirmed
+        node-version: '20'
 
     - name: Install dependencies
       run: npm install
@@ -32,10 +32,13 @@ jobs:
 
     - name: Deploy to Lambda
       run: |
-        aws lambda create-function \
+        aws lambda update-function-code \
           --function-name AquamarkHandler \
-          --runtime nodejs20.x \
-          --role arn:aws:iam::634488301944:role/aquamark-lambda-role \
-          --handler index.handler \
           --zip-file fileb://aquamark-lambda.zip \
           --publish
+
+    - name: Update Environment Variables
+      run: |
+        aws lambda update-function-configuration \
+          --function-name AquamarkHandler \
+          --environment "Variables={SUPABASE_URL=${{ secrets.SUPABASE_URL }}, SUPABASE_KEY=${{ secrets._
