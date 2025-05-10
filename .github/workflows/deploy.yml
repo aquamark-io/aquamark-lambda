@@ -32,18 +32,27 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-2
 
-    - name: 🆕 Create New Lambda Function
+       - name: 🆕 Create or Update Lambda Function
       run: |
-        echo "Creating new Lambda function..."
-        aws lambda create-function \
-          --function-name AquamarkHandler \
-          --runtime nodejs20.x \
-          --role arn:aws:iam::634488301944:role/aquamark-lambda-role \
-          --handler index.handler \
-          --zip-file fileb://aquamark-lambda.zip \
-          --publish \
-          --environment "Variables={SUPABASE_URL=${{ secrets.SUPABASE_URL }}, SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}}"
-
+        echo "Creating or updating Lambda function..."
+        aws lambda get-function --function-name AquamarkHandler > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
+          echo "🔄 Lambda function exists. Updating..."
+          aws lambda update-function-code \
+            --function-name AquamarkHandler \
+            --zip-file fileb://aquamark-lambda.zip \
+            --publish
+        else
+          echo "🆕 Lambda function does not exist. Creating..."
+          aws lambda create-function \
+            --function-name AquamarkHandler \
+            --runtime nodejs20.x \
+            --role arn:aws:iam::634488301944:role/aquamark-lambda-role \
+            --handler index.handler \
+            --zip-file fileb://aquamark-lambda.zip \
+            --publish \
+            --environment "Variables={SUPABASE_URL=${{ secrets.SUPABASE_URL }}, SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}}"
+        fi
     - name: 🕐 Wait for Lambda Active Status
       run: |
         echo "Waiting for Lambda to reach Active status..."
