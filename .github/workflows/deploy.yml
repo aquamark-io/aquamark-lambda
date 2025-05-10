@@ -18,10 +18,12 @@ jobs:
         node-version: '20'
 
     - name: Install dependencies
-      run: npm install
+      run: |
+        npm install
+        ls -la   # List out to verify `node_modules` and `package-lock.json`
 
     - name: Zip for Lambda
-      run: zip -r aquamark-lambda.zip .
+      run: zip -r aquamark-lambda.zip . -x "node_modules/aws-sdk/*"
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
@@ -41,4 +43,4 @@ jobs:
       run: |
         aws lambda update-function-configuration \
           --function-name AquamarkHandler \
-          --environment "Variables={SUPABASE_URL=${{ secrets.SUPABASE_URL }}, SUPABASE_KEY=${{ secrets._
+          --environment "Variables={SUPABASE_URL=${{ secrets.SUPABASE_URL }}, SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}}"
