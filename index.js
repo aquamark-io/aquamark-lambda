@@ -6,7 +6,12 @@ const SUPABASE_KEY = process.env.SUPABASE_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 exports.handler = async (event) => {
-    const path = event.rawPath;
+    // 🔍 Log the raw path for debugging
+    console.log("🌐 Full Path Detected:", event.rawPath);
+
+    // 🔄 Strip `/production` from the path if it exists
+    const path = event.rawPath.replace("/production", "");
+    console.log("🛣️ Cleaned Path:", path);
 
     try {
         const body = JSON.parse(event.body);
@@ -14,7 +19,8 @@ exports.handler = async (event) => {
 
         console.log("🚀 Querying for user:", user_email);
 
-        if (path === "/fetchUserData") { // 🔥 Corrected path!
+        if (path === "/fetchUserData") {
+            // Step 1: Query usage table for the user
             const { data, error } = await supabase
                 .from('usage')
                 .select('pages_remaining, pages_used, plan_name')
@@ -30,6 +36,7 @@ exports.handler = async (event) => {
                 return { statusCode: 404, body: JSON.stringify({ error: "User not found" }) };
             }
 
+            // Step 2: Fetch the logo from Supabase Storage
             const { data: fileData, error: storageError } = await supabase
                 .storage
                 .from('logos')
@@ -45,6 +52,7 @@ exports.handler = async (event) => {
                 return { statusCode: 404, body: JSON.stringify({ error: "Logo not found" }) };
             }
 
+            // Since there's only one logo, we fetch the first one
             const logoFileName = fileData[0].name;
             const logo_url = `https://dvzmnikrvkvgragzhrof.supabase.co/storage/v1/object/public/logos/${user_email}/${logoFileName}`;
 
@@ -73,14 +81,16 @@ exports.handler = async (event) => {
                 .eq('user_email', user_email);
 
             if (error) {
+                console.error("❌ Update Error: ", error.message);
                 return { statusCode: 500, body: JSON.stringify({ error: "Update failed" }) };
             }
 
+            console.log("✅ Usage updated successfully.");
             return { statusCode: 200, body: JSON.stringify({ message: "Usage updated" }) };
         }
 
         console.log("🛑 Route not found:", path);
-        return { statusCode: 404, body: JSON.stringify({ error: "Route not found" });
+        return { statusCode: 404, body: JSON.stringify({ error: "Route not found" }) };
 
     } catch (err) {
         console.error("🔥 Handler Error: ", err.message);
