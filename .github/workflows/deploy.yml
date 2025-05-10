@@ -37,15 +37,13 @@ jobs:
         run: |
           echo "Creating Lambda function..."
           aws lambda create-function \
-      --function-name AquamarkHandler \
-      --runtime nodejs20.x \
-      --role arn:aws:iam::634488301944:role/aquamark-lambda-role \
-      --handler index.handler \
-      --zip-file fileb://aquamark-lambda.zip \
-      --publish \
-      --environment "Variables={SUPABASE_URL=${{ secrets.SUPABASE_URL }}, SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}}"
-
-          fi
+            --function-name AquamarkHandler \
+            --runtime nodejs20.x \
+            --role arn:aws:iam::634488301944:role/aquamark-lambda-role \
+            --handler index.handler \
+            --zip-file fileb://aquamark-lambda.zip \
+            --publish \
+            --environment "Variables={SUPABASE_URL=${{ secrets.SUPABASE_URL }}, SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}}"
 
       - name: 🕐 Wait for Lambda Active Status
         run: |
