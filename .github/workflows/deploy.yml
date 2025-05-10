@@ -9,57 +9,59 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '20'
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
 
-    - name: Install dependencies
-      run: |
-        npm install
-        ls -la   # List out to verify `node_modules` and `package-lock.json`
+      - name: Install dependencies
+        run: |
+          npm install
+          ls -la   # List out to verify `node_modules` and `package-lock.json`
 
-   - name: Zip for Lambda
-     run: |
-      zip -r aquamark-lambda.zip . -x "node_modules/aws-sdk/*"
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-2
+      - name: Zip for Lambda
+        run: |
+          zip -r aquamark-lambda.zip . -x "node_modules/aws-sdk/*"
 
-       - name: 🆕 Create or Update Lambda Function
-      run: |
-        echo "Creating or updating Lambda function..."
-        aws lambda get-function --function-name AquamarkHandler > /dev/null 2>&1
-        if [ $? -eq 0 ]; then
-          echo "🔄 Lambda function exists. Updating..."
-          aws lambda update-function-code \
-            --function-name AquamarkHandler \
-            --zip-file fileb://aquamark-lambda.zip \
-            --publish
-        else
-          echo "🆕 Lambda function does not exist. Creating..."
-          aws lambda create-function \
-            --function-name AquamarkHandler \
-            --runtime nodejs20.x \
-            --role arn:aws:iam::634488301944:role/aquamark-lambda-role \
-            --handler index.handler \
-            --zip-file fileb://aquamark-lambda.zip \
-            --publish \
-            --environment "Variables={SUPABASE_URL=${{ secrets.SUPABASE_URL }}, SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}}"
-        fi
-    - name: 🕐 Wait for Lambda Active Status
-      run: |
-        echo "Waiting for Lambda to reach Active status..."
-        STATUS=$(aws lambda get-function --function-name AquamarkHandler --query 'Configuration.LastUpdateStatus' --output text)
-        while [ "$STATUS" != "Successful" ]; do
-          echo "Current status: $STATUS. Waiting 15 seconds..."
-          sleep 15
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: 🆕 Create or Update Lambda Function
+        run: |
+          echo "Creating or updating Lambda function..."
+          aws lambda get-function --function-name AquamarkHandler > /dev/null 2>&1
+          if [ $? -eq 0 ]; then
+            echo "🔄 Lambda function exists. Updating..."
+            aws lambda update-function-code \
+              --function-name AquamarkHandler \
+              --zip-file fileb://aquamark-lambda.zip \
+              --publish
+          else
+            echo "🆕 Lambda function does not exist. Creating..."
+            aws lambda create-function \
+              --function-name AquamarkHandler \
+              --runtime nodejs20.x \
+              --role arn:aws:iam::634488301944:role/aquamark-lambda-role \
+              --handler index.handler \
+              --zip-file fileb://aquamark-lambda.zip \
+              --publish \
+              --environment "Variables={SUPABASE_URL=${{ secrets.SUPABASE_URL }}, SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}}"
+          fi
+
+      - name: 🕐 Wait for Lambda Active Status
+        run: |
+          echo "Waiting for Lambda to reach Active status..."
           STATUS=$(aws lambda get-function --function-name AquamarkHandler --query 'Configuration.LastUpdateStatus' --output text)
-        done
-        echo "Lambda is Active and Successful!"
+          while [ "$STATUS" != "Successful" ]; do
+            echo "Current status: $STATUS. Waiting 15 seconds..."
+            sleep 15
+            STATUS=$(aws lambda get-function --function-name AquamarkHandler --query 'Configuration.LastUpdateStatus' --output text)
+          done
+          echo "Lambda is Active and Successful!"
