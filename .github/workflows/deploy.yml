@@ -39,11 +39,22 @@ jobs:
           --zip-file fileb://aquamark-lambda.zip \
           --publish
 
-    - name: 🕐 Wait for Lambda to Finish Deployment
+    - name: 🕐 Wait for Lambda Code Update
       run: |
-        echo "Waiting for Lambda to complete deployment..."
+        echo "Waiting for Lambda to finish code update..."
         aws lambda wait function-updated --function-name AquamarkHandler
-        echo "Lambda deployment complete!"
+        echo "Lambda code update complete!"
+
+    - name: 🕐 Wait for Lambda Active Status
+      run: |
+        echo "Waiting for Lambda to reach Active status..."
+        STATUS=$(aws lambda get-function --function-name AquamarkHandler --query 'Configuration.LastUpdateStatus' --output text)
+        while [ "$STATUS" != "Successful" ]; do
+          echo "Current status: $STATUS. Waiting 15 seconds..."
+          sleep 15
+          STATUS=$(aws lambda get-function --function-name AquamarkHandler --query 'Configuration.LastUpdateStatus' --output text)
+        done
+        echo "Lambda is Active and Successful!"
 
     - name: Update Environment Variables
       run: |
