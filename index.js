@@ -1,4 +1,5 @@
-// Lambda Function Logic
+// index.js
+
 const { createClient } = require('@supabase/supabase-js');
 
 const SUPABASE_URL = 'https://dvzmnikrvkvgragzhrof.supabase.co';
@@ -7,61 +8,53 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 exports.handler = async (event) => {
+    const path = event.rawPath;
+
     try {
         const body = JSON.parse(event.body);
         const user_email = body.user_email.toLowerCase();
 
-        // Query the usage table
-        const { data, error } = await supabase
-            .from('usage')
-            .select('pages_remaining, pages_used, plan_name')
-            .eq('user_email', user_email)
-            .single();
+        // Route Handler
+        if (path === "/getUserData") {
+            const { data, error } = await supabase
+                .from('usage')
+                .select('logo_url, pages_remaining, pages_used, plan_name')
+                .eq('user_email', user_email)
+                .single();
 
-        if (error || !data) {
-            console.error('Error fetching data:', error);
+            if (error || !data) {
+                return { statusCode: 404, body: JSON.stringify({ error: "User not found" }) };
+            }
+
             return {
-                statusCode: 404,
-                body: JSON.stringify({ error: "User not found or data retrieval failed." })
+                statusCode: 200,
+                body: JSON.stringify({
+                    logo_url: `https://dvzmnikrvkvgragzhrof.supabase.co/storage/v1/object/public/logos/${user_email}/${data.logo_url}`,
+                    pages_remaining: data.pages_remaining,
+                    pages_used: data.pages_used,
+                    plan_name: data.plan_name
+                })
             };
         }
 
-        // Fetch the logo from Supabase storage
-        const { data: logoData, error: logoError } = await supabase.storage
-            .from('logos')
-            .list(`${user_email}`, {
-                limit: 1,
-                offset: 0,
-                sortBy: { column: 'name', order: 'asc' }
-            });
+        if (path === "/updateUsage") {
+            const { pages_used } = body;
 
-        if (logoError || !logoData.length) {
-            console.error('Logo fetch failed:', logoError);
-            return {
-                statusCode: 404,
-                body: JSON.stringify({ error: "Logo not found." })
-            };
+            const { data, error } = await supabase
+                .from('usage')
+                .update({ pages_remaining: pages_used })
+                .eq('user_email', user_email);
+
+            if (error) {
+                return { statusCode: 500, body: JSON.stringify({ error: "Update failed" }) };
+            }
+
+            return { statusCode: 200, body: JSON.stringify({ message: "Usage updated" }) };
         }
 
-        const logoFile = logoData[0].name;
-        const logoUrl = `https://dvzmnikrvkvgragzhrof.supabase.co/storage/v1/object/public/logos/${user_email}/${logoFile}`;
-
-        // Construct the response
-        return {
-            statusCode: 200,
-            body: JSON.stringify({
-                logo_url: logoUrl,
-                pages_remaining: data.pages_remaining,
-                pages_used: data.pages_used,
-                plan_name: data.plan_name
-            })
-        };
+        return { statusCode: 404, body: "Route not found" };
 
     } catch (err) {
-        console.error('Function error:', err);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: "Internal Server Error" })
-        };
+        return { statusCode: 500, body: JSON.stringify({ error: "Internal Server Error" }) };
     }
 };
