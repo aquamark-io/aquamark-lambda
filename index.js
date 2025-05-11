@@ -1,61 +1,80 @@
-const fetch = require('node-fetch');
+import fetch from 'node-fetch';
+import { createClient } from '@supabase/supabase-js';
+
+// Load environment variables
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 
-exports.handler = async (event) => {
-    console.log("🚀 Lambda invoked");
-    console.log("🌐 Incoming Event: ", JSON.stringify(event));
+// Initialize Supabase client
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-    if (!event.queryStringParameters || !event.queryStringParameters.user_email) {
-        console.error("❌ Missing user_email parameter.");
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ error: "user_email parameter is required" }),
-        };
+console.log("✅ Lambda Initialized");
+
+export const handler = async (event) => {
+  try {
+    console.log("✅ Starting Lambda Execution");
+    console.log("Event Received: ", JSON.stringify(event, null, 2));
+
+    // Extract user email from query parameters
+    const userEmail = event.queryStringParameters?.user_email;
+    console.log("🔍 User Email Detected: ", userEmail);
+
+    if (!userEmail) {
+      console.error("❌ No user email provided");
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "No user email provided" })
+      };
     }
 
-    const userEmail = event.queryStringParameters.user_email;
-    console.log("📩 User Email: ", userEmail);
+    console.log("🌐 Connecting to Supabase...");
+    console.log("📝 Environment Variables Loaded: ", supabaseUrl, supabaseKey);
 
-    try {
-        const response = await fetch(`${supabaseUrl}/rest/v1/usage?user_email=eq.${userEmail}`, {
-            method: 'GET',
-            headers: {
-                apikey: supabaseKey,
-                Authorization: `Bearer ${supabaseKey}`,
-                'Content-Type': 'application/json',
-            },
-        });
+    // Fetch user data from Supabase
+    console.log(`🔎 Querying Supabase for user: ${userEmail}`);
+    const { data, error } = await supabase
+      .from('usage')
+      .select('plan_name, pages_used, page_credits')
+      .eq('user_email', userEmail)
+      .single();
 
-        if (!response.ok) {
-            console.error("❌ Supabase Fetch Error: ", response.statusText);
-            return {
-                statusCode: response.status,
-                body: JSON.stringify({ error: response.statusText }),
-            };
-        }
-
-        const data = await response.json();
-        console.log("✅ Data received: ", JSON.stringify(data));
-
-        if (!data || data.length === 0) {
-            console.warn("⚠️ No usage data found for email: ", userEmail);
-            return {
-                statusCode: 404,
-                body: JSON.stringify({ error: "No usage data found" }),
-            };
-        }
-
-        return {
-            statusCode: 200,
-            body: JSON.stringify(data),
-        };
-
-    } catch (error) {
-        console.error("💥 Handler Error: ", error.message);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: "Internal Server Error" }),
-        };
+    if (error) {
+      console.error("❌ Supabase Query Error: ", error.message);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: "Database query failed" })
+      };
     }
+
+    if (!data) {
+      console.warn("⚠️ No data found for the provided email");
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ error: "User not found" })
+      };
+    }
+
+    console.log("✅ Supabase Query Success: ", JSON.stringify(data));
+
+    // Prepare the response object
+    const responseBody = {
+      plan_name: data.plan_name,
+      pages_used: data.pages_used,
+      page_credits: data.page_credits
+    };
+
+    console.log("✅ Response Body Prepared: ", JSON.stringify(responseBody));
+
+    // Send back the successful response
+    return {
+      statusCode: 200,
+      body: JSON.stringify(responseBody)
+    };
+  } catch (err) {
+    console.error("🔥 Unexpected Error: ", err.message);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Internal Server Error" })
+    };
+  }
 };
