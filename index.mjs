@@ -59,7 +59,7 @@ export const handler = async (event) => {
     // Prepare the response object
     const responseBody = {
       plan_name: data.plan_name,
-      pages_remaining: data.pages_remaining,
+      pages_used: data.pages_used,
       page_credits: data.page_credits
     };
 
