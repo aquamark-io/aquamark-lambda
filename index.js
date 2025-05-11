@@ -1,6 +1,5 @@
-const fetch = require('node-fetch');
-
 const { createClient } = require('@supabase/supabase-js');
+const fetch = require('node-fetch'); // ✅ Added this line
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
