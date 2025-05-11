@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
-const supabaseUrl = 'https://dvzmnikrvkvgragzhrof.supabase.co';
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
 
 exports.handler = async (event) => {
     console.log("🚀 Lambda invoked");
