@@ -34,7 +34,7 @@ export const handler = async (event) => {
     console.log(`🔎 Querying Supabase for user: ${userEmail}`);
     const { data, error } = await supabase
       .from('usage')
-      .select('plan_name, pages_used, page_credits')
+      .select('plan_name, pages_, page_credits')
       .eq('user_email', userEmail)
       .single();
 
@@ -59,7 +59,7 @@ export const handler = async (event) => {
     // Prepare the response object
     const responseBody = {
       plan_name: data.plan_name,
-      pages_used: data.pages_used,
+      pages_remaining: data.pages_remaining,
       page_credits: data.page_credits
     };
 
