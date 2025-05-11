@@ -1,3 +1,5 @@
+console.log("🔍 Full Path Detected: ", event.rawPath);
+
 const { createClient } = require('@supabase/supabase-js');
 const fetch = require('node-fetch'); // ✅ Added this line
 
